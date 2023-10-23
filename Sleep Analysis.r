@@ -155,3 +155,36 @@ print(ncol(redundant_columns))
 
 #No redundant columns
 df_encoded <- df_encoded[, -redundant_columns]
+
+#####################################Logistic Regression#######################
+
+set.seed(1000)
+# Create a vector of row indices to sample from
+n <- nrow(df)
+sample_indices <- sample(1:n, size = round(0.7 * n), replace = FALSE)
+
+# Split the data into a training set (70%) and a testing set (30%)
+train_data <- df[sample_indices, ]
+test_data <- df[-sample_indices, ]
+
+df$BP.Lower.Limit<-as.numeric(df$BP.Lower.Limit)
+df$BP.Upper.Limit<-as.numeric(df$BP.Upper.Limit)
+
+# Specify the columns to be scaled (exclude 'Stress_level' column)
+numeric_cols <- c("Age", "Sleep.Duration", "Physical.Activity.Level", 
+                  "BP.Upper.Limit", "BP.Lower.Limit", "Heart.Rate")
+
+
+# Scale the numeric features in the training and test data
+train_data[numeric_cols] <- scale(train_data[numeric_cols])
+test_data[numeric_cols] <- scale(test_data[numeric_cols])
+
+
+
+model1 <- multinom(Stress.Level~.-Person.ID, data=train_data)
+summary(model1)
+
+y_pred = predict(object = model1, newdata=test_data, type="class")
+
+confusion <- table(Predicted= y_pred,True=test_data$Stress.Level)
+confusion
